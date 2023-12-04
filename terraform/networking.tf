@@ -37,7 +37,8 @@ resource "aws_subnet" "subnet-public-jenkins" {
   cidr_block        = "10.0.1.0/24"
   vpc_id            = aws_vpc.nodejs-web-app.id
   availability_zone = "us-east-1a"
-
+  map_public_ip_on_launch = true
+  
   tags = {
     Name = "Jenkins Subnet"
   }
@@ -49,6 +50,7 @@ resource "aws_subnet" "subnet-public-web-app" {
   cidr_block        = "10.0.3.0/24"
   vpc_id            = aws_vpc.nodejs-web-app.id
   availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "nodejs Web App Subnet"
@@ -177,24 +179,4 @@ resource "aws_network_interface" "nodejs-web-app" {
   security_groups = [aws_security_group.allow-all-outbound.id,
     aws_security_group.allow-ssh-traffic.id,
   aws_security_group.allow-web-traffic.id]
-}
-# 8.1 Assign an Elastic IP to the Network Interface of Jenkins
-
-resource "aws_eip" "jenkins" {
-  vpc                       = true
-  network_interface         = aws_network_interface.jenkins.id
-  associate_with_private_ip = "10.0.1.50"
-  depends_on = [
-    aws_internet_gateway.nodejs-web-app # it depends on the internet gateway (as the terraform page says, the elastic ip may require the internet gateway to already exist).
-  ]
-}
-# 8.2 Assign an Elastic IP to the Network Interface of Simple Web App
-
-resource "aws_eip" "nodejs-web-app" {
-  domain                    = "vpc"
-  network_interface         = aws_network_interface.nodejs-web-app.id
-  associate_with_private_ip = "10.0.3.50"
-  depends_on = [
-    aws_internet_gateway.nodejs-web-app
-  ]
 }
